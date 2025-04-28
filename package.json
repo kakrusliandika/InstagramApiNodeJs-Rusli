@@ -15,5 +15,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "name": "instagram-api-nodejs",
+  "version": "1.0.0",
+  "dependencies": {
+    "puppeteer": "^21.3.8"
+  }
 }

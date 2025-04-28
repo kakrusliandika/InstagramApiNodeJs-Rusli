@@ -1,12 +1,9 @@
 {
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "name": "instagram-api-nodejs",
   "version": "1.0.0",
+  "main": "api/instagram.js",
   "dependencies": {
-    "puppeteer": "^21.3.8"
+    "puppeteer-core": "^21.3.8",
+    "chrome-aws-lambda": "^10.1.0"
   }
 }
-

@@ -1,21 +1,26 @@
-const puppeteer = require('puppeteer');
+const chromium = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer-core');
 
 module.exports = async (req, res) => {
   const { username } = req.query;
 
   if (!username) {
-    return res.status(400).json({ error: 'Username is required' });
+    return res.status(400).json({ error: 'Missing username' });
   }
 
   const url = `https://www.instagram.com/${username}/`;
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
-  const page = await browser.newPage();
+  let browser = null;
 
   try {
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
+    });
+
+    const page = await browser.newPage();
     await page.goto(url, { waitUntil: 'networkidle2' });
     await page.waitForSelector('article');
 
@@ -35,10 +40,10 @@ module.exports = async (req, res) => {
 
     await browser.close();
 
-    res.status(200).json(feed.slice(0, 35));
+    return res.status(200).json(feed.slice(0, 35));
   } catch (error) {
     console.error('Error scraping Instagram:', error.message);
-    await browser.close();
-    res.status(500).json({ error: 'Failed to scrape Instagram data' });
+    if (browser !== null) await browser.close();
+    return res.status(500).json({ error: 'Failed to scrape Instagram data' });
   }
 };

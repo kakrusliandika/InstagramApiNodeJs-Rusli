@@ -1,0 +1,16 @@
+{
+    "version": 2,
+    "functions": {
+      "api/instagram.js": {
+        "memory": 512,
+        "maxDuration": 30
+      }
+    },
+    "routes": [
+      {
+        "src": "/api/instagram",
+        "dest": "/api/instagram.js"
+      }
+    ]
+  }
+  

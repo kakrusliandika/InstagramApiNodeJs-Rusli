@@ -1,20 +1,27 @@
-const express = require('express');
-const puppeteer = require('puppeteer');
+const chromium = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer-core');
 
-const app = express();
+module.exports = async (req, res) => {
+  const { username } = req.query;
 
-async function getInstagramFeed(username) {
+  if (!username) {
+    return res.status(400).json({ error: 'Missing username' });
+  }
+
   const url = `https://www.instagram.com/${username}/`;
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
-  const page = await browser.newPage();
+  let browser = null;
 
   try {
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
+    });
 
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: 'networkidle2' });
     await page.waitForSelector('article');
 
     const feed = await page.evaluate(() => {
@@ -33,25 +40,10 @@ async function getInstagramFeed(username) {
 
     await browser.close();
 
-    return feed.slice(0, 35);
+    return res.status(200).json(feed.slice(0, 35));
   } catch (error) {
     console.error('Error scraping Instagram:', error.message);
-    await browser.close();
-    return null;
+    if (browser !== null) await browser.close();
+    return res.status(500).json({ error: 'Failed to scrape Instagram data' });
   }
-}
-
-// Route
-app.get('/api/instagram/:username', async (req, res) => {
-  const { username } = req.params;
-  const feed = await getInstagramFeed(username);
-
-  if (feed) {
-    res.json(feed);
-  } else {
-    res.status(500).json({ error: 'Failed to scrape Instagram data' });
-  }
-});
-
-// Export app supaya bisa dipakai di Vercel/Netlify
-module.exports = app;
+};

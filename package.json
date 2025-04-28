@@ -1,8 +1,8 @@
 {
-  "dependencies": {
-    // "express": "^5.1.0",
-    "puppeteer": "^24.7.2"
-  },
+  // "dependencies": {
+  // "express": "^5.1.0",
+  //   "puppeteer": "^24.7.2"
+  // },
   // "scripts": {
   //   "dev": "nodemon instagramScraper.js"
   // },
@@ -22,3 +22,4 @@
     "puppeteer": "^21.3.8"
   }
 }
+

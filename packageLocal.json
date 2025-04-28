@@ -1,0 +1,24 @@
+{
+  "dependencies": {
+    "express": "^5.1.0",
+    "puppeteer": "^24.7.2"
+  },
+  "scripts": {
+    "dev": "nodemon instagramScraper.js"
+  },
+  "name": "instagram-api-nodejs",
+  "version": "1.0.0",
+  "main": "instagramScraper.js",
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "name": "instagram-api-nodejs",
+  "version": "1.0.0",
+  "dependencies": {
+    "puppeteer": "^21.3.8"
+  }
+}

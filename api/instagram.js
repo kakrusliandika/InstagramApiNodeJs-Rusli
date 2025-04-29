@@ -1,16 +1,20 @@
+// api/instagram.js
+const express = require('express');
+const router = express.Router();
 const puppeteerCore = require('puppeteer-core');
 const chromeLambda = require('chrome-aws-lambda');
 
-module.exports = async (req, res) => {
+router.get('/', async (req, res) => {
   const { username } = req.query;
 
   if (!username) {
     return res.status(400).json({ error: 'Username is required' });
   }
 
+  let browser;
   try {
     console.log('Mempersiapkan browser...');
-    const browser = await puppeteerCore.launch({
+    browser = await puppeteerCore.launch({
       args: chromeLambda.args,
       executablePath: await chromeLambda.executablePath || '/usr/bin/chromium-browser',
       headless: chromeLambda.headless,
@@ -20,8 +24,6 @@ module.exports = async (req, res) => {
     console.log('Browser berhasil dibuka');
 
     const page = await browser.newPage();
-
-    // Set User-Agent agar tidak terdeteksi sebagai bot
     await page.setUserAgent(
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
       '(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -32,12 +34,10 @@ module.exports = async (req, res) => {
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
     await page.waitForSelector('article', { timeout: 10000 });
-    console.log('Selector artikel ditemukan, mulai mengambil data...');
 
     const feed = await page.evaluate(() => {
       const images = document.querySelectorAll('article img');
       const results = [];
-
       images.forEach(img => {
         results.push({
           imageUrl: img.src,
@@ -45,15 +45,16 @@ module.exports = async (req, res) => {
           date: new Date().toISOString(),
         });
       });
-
       return results;
     });
 
     await browser.close();
-    console.log(`Scraping selesai, total postingan: ${feed.length}`);
-    res.status(200).json(feed.slice(0, 35)); // Maksimal 35 post
+    res.status(200).json(feed.slice(0, 35));
   } catch (error) {
     console.error('Gagal mengambil feed:', error.message);
+    if (browser) await browser.close();
     res.status(500).json({ error: 'Failed to fetch feed' });
   }
-};
+});
+
+module.exports = router;

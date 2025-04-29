@@ -1,9 +1,14 @@
 {
-  "name": "instagram-api-nodejs",
+  "name": "instagramapinodejs-rusli",
   "version": "1.0.0",
-  "main": "api/instagram.js",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
-    "puppeteer-core": "^21.3.8",
+    "express": "^4.18.2",
+    "puppeteer": "^21.3.8",
+    "puppeteer-core": "^10.4.0",
     "chrome-aws-lambda": "^10.1.0"
   }
 }

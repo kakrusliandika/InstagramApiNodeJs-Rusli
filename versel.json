@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "server.js",
+      "src": "andika.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/instagram/(.*)",
-      "dest": "/server.js"
+      "dest": "/andika.js"
     }
   ]
 }

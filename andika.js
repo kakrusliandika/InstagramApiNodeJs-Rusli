@@ -1,25 +1,38 @@
 const express = require('express');
+const puppeteerCore = require('puppeteer-core');
+const chromeLambda = require('chrome-aws-lambda');
 const app = express();
 const port = process.env.PORT || 3000;
 
+const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_VERSION;
+
 let puppeteer;
-let isLambda = !!process.env.AWS_LAMBDA_FUNCTION_VERSION;
+let chrome;
 
 if (isLambda) {
-  puppeteer = require('puppeteer-core');
-  var chrome = require('chrome-aws-lambda');
+  puppeteer = puppeteerCore;
+  chrome = chromeLambda;
 } else {
-  puppeteer = require('puppeteer');
+  puppeteer = require('puppeteer'); // Use puppeteer for local development
 }
 
 app.get('/api/instagram/:username', async (req, res) => {
-  const username = req.params.username;
-  const feed = await getInstagramFeed(username);
+  const { username } = req.params;
 
-  if (feed) {
-    res.json(feed);
-  } else {
-    res.status(500).json({ error: 'Failed to fetch feed' });
+  if (!username) {
+    return res.status(400).json({ error: 'Username is required' });
+  }
+
+  try {
+    const feed = await getInstagramFeed(username);
+    if (feed) {
+      res.json(feed);
+    } else {
+      res.status(500).json({ error: 'Failed to fetch feed' });
+    }
+  } catch (error) {
+    console.error('Error fetching Instagram feed:', error.message);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -29,6 +42,7 @@ async function getInstagramFeed(username) {
   let browser;
 
   try {
+    // Launch puppeteer with proper arguments depending on the environment
     if (isLambda) {
       browser = await puppeteer.launch({
         args: chrome.args,
@@ -61,7 +75,7 @@ async function getInstagramFeed(username) {
     });
 
     await browser.close();
-    return feed.slice(0, 35);
+    return feed.slice(0, 35); // Return only the first 35 posts
   } catch (error) {
     console.error('Error scraping Instagram:', error.message);
     if (browser) await browser.close();
@@ -72,4 +86,3 @@ async function getInstagramFeed(username) {
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
-

@@ -1,15 +1,9 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "api/instagram.js",
-      "use": "@vercel/node"
-    }
+    { "src": "api/instagram.js", "use": "@vercel/node" }
   ],
   "routes": [
-    {
-      "src": "/api/instagram/(.*)",
-      "dest": "api/instagram.js"
-    }
+    { "src": "/api/instagram", "dest": "api/instagram.js" }
   ]
 }

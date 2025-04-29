@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "andika.js",
+      "src": "/api/instagram.js",
       "use": "@vercel/node"
     }
   ],

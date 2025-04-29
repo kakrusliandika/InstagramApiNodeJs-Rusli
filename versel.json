@@ -9,7 +9,7 @@
   "routes": [
     {
       "src": "/api/instagram/(.*)",
-      "dest": "/andika.js"
+      "dest": "/api/instagram.js"
     }
   ]
 }

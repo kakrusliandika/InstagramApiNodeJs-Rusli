@@ -1,18 +1,19 @@
 {
-  "name": "instagramapinodejs-rusli",
-  "version": "1.0.0",
-  "main": "andika.js",
-  "scripts": {
-    "start": "node andika.js",
-    "dev": "node andika.js"
-  },
-  "dependencies": {
-    "express": "^4.17.1",
-    "puppeteer": "^19.0.0",
-    "puppeteer-core": "^10.1.0",
-    "chrome-aws-lambda": "^10.0.0"
-  },
-  "devDependencies": {
-    "vercel": "^28.1.0"
+    "name": "instagramapinodejs-rusli",
+    "version": "1.0.0",
+    "main": "andika.js",
+    "scripts": {
+      "start": "node andika.js",
+      "dev": "node andika.js"
+    },
+    "dependencies": {
+      "express": "^4.17.1",
+      "puppeteer": "^19.0.0",
+      "puppeteer-core": "^10.1.0",
+      "chrome-aws-lambda": "^10.0.0"
+    },
+    "devDependencies": {
+      "vercel": "^28.1.0"
+    }
   }
-}
+  

@@ -29,8 +29,16 @@
 git clone https://github.com/kakrusliandika/InstagramApiNodeJs-Rusli.git
 cd InstagramApiNodeJs-Rusli
 npm install --legacy-peer-deps
+```
+---
+
+## ▶️ Jalankan Secara Lokal
+```bash
 npm start
+```
 http://localhost:3000/api/instagram?username=instagram_username
+
+---
 
 ## 📘 Contoh Response
 [

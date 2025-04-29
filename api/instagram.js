@@ -2,61 +2,58 @@ const puppeteerCore = require('puppeteer-core');
 const chromeLambda = require('chrome-aws-lambda');
 
 module.exports = async (req, res) => {
-  const { username } = req.query; // Get username from query parameter
+  const { username } = req.query;
 
   if (!username) {
     return res.status(400).json({ error: 'Username is required' });
   }
 
   try {
-    const feed = await getInstagramFeed(username);
-    if (feed) {
-      res.status(200).json(feed);
-    } else {
-      res.status(500).json({ error: 'Failed to fetch feed' });
-    }
-  } catch (error) {
-    console.error('Error fetching Instagram feed:', error.message);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
-
-async function getInstagramFeed(username) {
-  const url = `https://www.instagram.com/${username}/`;
-
-  let browser;
-
-  try {
-    // Launch puppeteer with proper arguments for Vercel (Lambda environment)
-    browser = await puppeteerCore.launch({
+    console.log('Mempersiapkan browser...');
+    const browser = await puppeteerCore.launch({
       args: chromeLambda.args,
       executablePath: await chromeLambda.executablePath || '/usr/bin/chromium-browser',
       headless: chromeLambda.headless,
+      defaultViewport: chromeLambda.defaultViewport,
     });
 
+    console.log('Browser berhasil dibuka');
+
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle2' });
-    await page.waitForSelector('article');
+
+    // Set User-Agent agar tidak terdeteksi sebagai bot
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+      '(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    );
+
+    const url = `https://www.instagram.com/${username}/`;
+    console.log(`Membuka halaman: ${url}`);
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+
+    await page.waitForSelector('article', { timeout: 10000 });
+    console.log('Selector artikel ditemukan, mulai mengambil data...');
 
     const feed = await page.evaluate(() => {
-      const posts = document.querySelectorAll('article img');
+      const images = document.querySelectorAll('article img');
       const results = [];
 
-      posts.forEach(img => {
-        const imageUrl = img.src;
-        const caption = img.alt || '';
-        const date = new Date().toISOString();
-        results.push({ imageUrl, caption, date });
+      images.forEach(img => {
+        results.push({
+          imageUrl: img.src,
+          caption: img.alt || '',
+          date: new Date().toISOString(),
+        });
       });
 
       return results;
     });
 
     await browser.close();
-    return feed.slice(0, 35); // Return only the first 35 posts
+    console.log(`Scraping selesai, total postingan: ${feed.length}`);
+    res.status(200).json(feed.slice(0, 35)); // Maksimal 35 post
   } catch (error) {
-    console.error('Error scraping Instagram:', error.message);
-    if (browser) await browser.close();
-    return null;
+    console.error('Gagal mengambil feed:', error.message);
+    res.status(500).json({ error: 'Failed to fetch feed' });
   }
-}
+};

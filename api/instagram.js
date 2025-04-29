@@ -1,24 +1,46 @@
-const chromium = require('chrome-aws-lambda');
-const puppeteer = require('puppeteer-core');
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
 
-module.exports = async (req, res) => {
-  const { username } = req.query;
+let puppeteer;
+let isLambda = !!process.env.AWS_LAMBDA_FUNCTION_VERSION;
 
-  if (!username) {
-    return res.status(400).json({ error: 'Missing username' });
+if (isLambda) {
+  puppeteer = require('puppeteer-core');
+  var chrome = require('chrome-aws-lambda');
+} else {
+  puppeteer = require('puppeteer');
+}
+
+app.get('/api/instagram/:username', async (req, res) => {
+  const username = req.params.username;
+  const feed = await getInstagramFeed(username);
+
+  if (feed) {
+    res.json(feed);
+  } else {
+    res.status(500).json({ error: 'Failed to fetch feed' });
   }
+});
 
+async function getInstagramFeed(username) {
   const url = `https://www.instagram.com/${username}/`;
 
-  let browser = null;
+  let browser;
 
   try {
-    browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath,
-      headless: chromium.headless,
-    });
+    if (isLambda) {
+      browser = await puppeteer.launch({
+        args: chrome.args,
+        executablePath: await chrome.executablePath || '/usr/bin/chromium-browser',
+        headless: chrome.headless,
+      });
+    } else {
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
+    }
 
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: 'networkidle2' });
@@ -39,11 +61,14 @@ module.exports = async (req, res) => {
     });
 
     await browser.close();
-
-    return res.status(200).json(feed.slice(0, 35));
+    return feed.slice(0, 35);
   } catch (error) {
     console.error('Error scraping Instagram:', error.message);
-    if (browser !== null) await browser.close();
-    return res.status(500).json({ error: 'Failed to scrape Instagram data' });
+    if (browser) await browser.close();
+    return null;
   }
-};
+}
+
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});

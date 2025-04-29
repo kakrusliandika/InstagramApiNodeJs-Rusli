@@ -41,6 +41,7 @@ http://localhost:3000/api/instagram?username=instagram_username
 ---
 
 ## 📘 Contoh Response
+```bash
 [
   {
     "imageUrl": "https://instagram.fcgk10-1.fna.fbcdn.net/v/...jpg",
@@ -49,7 +50,9 @@ http://localhost:3000/api/instagram?username=instagram_username
   },
   ...
 ]
+```
 
+---
 
 ## 🛑 Kendala Hosting
 

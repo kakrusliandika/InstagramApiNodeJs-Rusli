@@ -57,8 +57,8 @@ http://localhost:3000/api/instagram?username=instagram_username
 ## 🛑 Kendala Hosting
 
 Platform	Status	Catatan
-✅ Lokal	Berfungsi	Puppeteer berjalan baik dengan Chromium lokal
-❌ Vercel	Gagal	Tidak support full headless Chromium (tanpa custom server)
-❌ Railway	Gagal	Butuh konfigurasi tambahan; Chromium mungkin tidak tersedia
-🟡 Render.com	Mungkin	Tergantung pengaturan runtime dan region
-✅ VPS/Linux	Disarankan	Ideal untuk penggunaan puppeteer tanpa batasan runtime hosting
+- ✅ Lokal	Berfungsi	Puppeteer berjalan baik dengan Chromium lokal
+- ❌ Vercel	Gagal	Tidak support full headless Chromium (tanpa custom server)
+- ❌ Railway	Gagal	Butuh konfigurasi tambahan; Chromium mungkin tidak tersedia
+- 🟡 Render.com	Mungkin	Tergantung pengaturan runtime dan region
+- ✅ VPS/Linux	Disarankan	Ideal untuk penggunaan puppeteer tanpa batasan runtime hosting

@@ -1,59 +1,30 @@
-const puppeteerCore = require('puppeteer-core');
-const chromeLambda = require('chrome-aws-lambda');
+const axios = require('axios');
 
 module.exports = async (req, res) => {
   const { username } = req.query;
-
-  if (!username) {
-    return res.status(400).json({ error: 'Username is required' });
-  }
+  if (!username) return res.status(400).json({ error: 'Username is required' });
 
   try {
-    console.log('Mempersiapkan browser...');
-    const browser = await puppeteerCore.launch({
-      args: chromeLambda.args,
-      executablePath: await chromeLambda.executablePath || '/usr/bin/chromium-browser',
-      headless: chromeLambda.headless,
-      defaultViewport: chromeLambda.defaultViewport,
+    const response = await axios.get(`https://www.instagram.com/api/v1/users/web_profile_info/`, {
+      params: { username },
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        'X-IG-App-ID': '936619743392459' // Optional header
+      }
     });
 
-    console.log('Browser berhasil dibuka');
+    const user = response.data.data.user;
+    const edges = user.edge_owner_to_timeline_media.edges;
 
-    const page = await browser.newPage();
+    const posts = edges.map((edge) => ({
+      imageUrl: edge.node.display_url,
+      caption: edge.node.edge_media_to_caption.edges[0]?.node.text || '',
+      timestamp: edge.node.taken_at_timestamp,
+    }));
 
-    // Set User-Agent agar tidak terdeteksi sebagai bot
-    await page.setUserAgent(
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
-      '(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    );
-
-    const url = `https://www.instagram.com/${username}/`;
-    console.log(`Membuka halaman: ${url}`);
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
-
-    await page.waitForSelector('article', { timeout: 10000 });
-    console.log('Selector artikel ditemukan, mulai mengambil data...');
-
-    const feed = await page.evaluate(() => {
-      const images = document.querySelectorAll('article img');
-      const results = [];
-
-      images.forEach(img => {
-        results.push({
-          imageUrl: img.src,
-          caption: img.alt || '',
-          date: new Date().toISOString(),
-        });
-      });
-
-      return results;
-    });
-
-    await browser.close();
-    console.log(`Scraping selesai, total postingan: ${feed.length}`);
-    res.status(200).json(feed.slice(0, 35)); // Maksimal 35 post
+    res.status(200).json(posts.slice(0, 12)); // Batasi 12 post saja
   } catch (error) {
-    console.error('Gagal mengambil feed:', error.message);
-    res.status(500).json({ error: 'Failed to fetch feed' });
+    console.error('Error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch data from Instagram' });
   }
 };
